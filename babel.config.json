@@ -13,6 +13,7 @@
       {
         "pragma": "d.el"
       }
-    ]
+    ],
+    "@babel/plugin-proposal-class-properties"
   ]
 }

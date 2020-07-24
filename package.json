@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-transform-react-jsx": "^7.10.4",
     "@snowpack/plugin-babel": "^1.4.0",
     "babel-preset-modern-browsers": "^14.2.1",
