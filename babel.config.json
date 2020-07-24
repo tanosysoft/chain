@@ -1,0 +1,18 @@
+{
+  presets: [
+    [
+      "modern-browsers",
+      {
+        modules: false
+      }
+    ]
+  ],
+  plugins: [
+    [
+      "@babel/plugin-transform-react-jsx",
+      {
+        "pragma": "d.el"
+      }
+    ]
+  ]
+}
