@@ -7,7 +7,6 @@ html {
 
 h1 {
   text-align: center;
-  font-size: 1.5rem;
 }
 
 h1::before {
@@ -19,9 +18,13 @@ h1::after {
 }
 
 .Chain {
-  width: 640px;
-  margin: 60px auto;
   white-space: pre-wrap;
+}
+
+@media (min-width: 640px) {
+  .Chain {
+    width: 640px;
+  }
 }
 
 .Chain-waitCursor::before {

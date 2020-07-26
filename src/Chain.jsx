@@ -25,6 +25,10 @@ class Chain extends d.Component {
     this.props = props;
   }
 
+  get classes() {
+    return d.resolve(this.props.class) || null;
+  }
+
   runScript = async () => {
     let stack = [];
     let queue = [...this.props.children];
@@ -92,7 +96,10 @@ class Chain extends d.Component {
   };
 
   render = () => this.el = (
-    <div onAttach={this.runScript} class="Chain" />
+    <div
+      onAttach={this.runScript}
+      class={['Chain', () => this.classes]}
+    />
   );
 }
 
