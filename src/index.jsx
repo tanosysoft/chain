@@ -11,7 +11,7 @@ let Fyria = () => (
     </choice>
   */
   <Chain class="mx-auto px-4 py-10">
-    <h1 class="mb-8">City of Fyrya</h1>
+    <h1 class="mb-8">City of Fyrya{sec(1)}</h1>
 
     {sdl(30)} "Welcome to Fyria,{sec(0.3)} the most popular
     dungeon city of the Kingdom of Yggdrasil!"{w}<br />
