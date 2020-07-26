@@ -1,7 +1,23 @@
 import d from '@dominant/core';
 
+let timeout = dl => new Promise(r => setTimeout(r, dl));
+
 class Chain extends d.Component {
-  cursor = 0;
+  static el(type, props, ...children) {
+    children = children.map(x => {
+      if (typeof x === 'function') {
+        let n = d.comment(`chain: ${x.name || 'anonymous'}`);
+        n.chainFn = x;
+
+        return n;
+      }
+
+      return x;
+    });
+
+    return d.el(type, props, ...children);
+  }
+
   dl = 100;
 
   constructor(props) {
@@ -9,54 +25,93 @@ class Chain extends d.Component {
     this.props = props;
   }
 
-  onFrame = async () => {
-    await new Promise(r => setTimeout(r, this.dl));
+  runScript = async () => {
+    let stack = [];
+    let queue = [...this.props.children];
+    let targetEl = this.el;
 
-    let i = 0;
-    let { children } = this.props;
+    while (stack.length || queue.length) {
+      if (!queue.length) {
+        let prevState = stack.pop();
 
-    for (let [ix, x] of children.entries()) {
-      let isLastChild = ix >= children.length - 1;
-
-      if (typeof x === 'string') {
-        let j = this.cursor - i;
-
-        if (j >= x.length) {
-          i += x.length;
-          continue;
-        }
-
-        this.el.append(document.createTextNode(x[j]));
-
-        if (!isLastChild || j < x.length - 1) {
-          this.cursor++;
-          requestAnimationFrame(this.onFrame);
-
-          break;
-        }
+        queue = prevState.queue;
+        targetEl = prevState.targetEl;
 
         continue;
       }
 
-      if (i !== this.cursor) {
-        i++;
+      let x = queue.shift();
+
+      if (x instanceof Text) {
+        await this.typewrite(targetEl, x.textContent);
         continue;
       }
 
       if (x instanceof Node) {
-        this.el.append(x);
+        if (x.chainFn) {
+          targetEl.append(x);
+          await x.chainFn(targetEl, this);
 
-        this.cursor++;
-        requestAnimationFrame(this.onFrame);
+          continue;
+        }
 
-        break;
+        if (!x.childNodes || !x.childNodes.length) {
+          targetEl.append(x);
+          continue;
+        }
+
+        stack.push({ targetEl, queue });
+
+        queue = [...x.childNodes];
+        x.innerHTML = '';
+
+        targetEl.append(x);
+        targetEl = x;
+
+        continue;
       }
+
+      if (typeof x === 'function') {
+        await x();
+        continue;
+      }
+
+      await this.typewrite(targetEl, x);
+    }
+  };
+
+  typewrite = async (el, x) => {
+    x = String(x);
+
+    while (x.length) {
+      await timeout(this.dl);
+
+      el.append(document.createTextNode(x[0]));
+      x = x.slice(1);
     }
   };
 
   render = () => this.el = (
-    <span onAttach={this.onFrame} />
+    <div onAttach={this.runScript} class="Chain" />
   );
 }
 
+let sdl = dl => (_, chain) => chain.dl = dl;
+let sec = s => () => timeout(s * 1000);
+
+let w = el => new Promise(resolve => {
+  let cursor = <span class="Chain-waitCursor" />;
+  el.append(cursor);
+
+  let onClick = () => {
+    document.removeEventListener('click', onClick);
+    cursor.remove();
+
+    resolve();
+  };
+
+  document.addEventListener('click', onClick);
+});
+
 export default Chain;
+export { sdl, sec, w };
