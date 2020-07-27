@@ -18,6 +18,25 @@ class Chain extends d.Component {
     return d.el(type, props, ...children);
   }
 
+  static if(predFn, nThen, nElse) {
+    let cIf = d.comment('chain: if');
+    let cElse = d.comment('chain: else');
+
+    cIf.chainIf = predFn;
+    nThen.chainThen = cIf;
+
+    let ret = [cIf, nThen];
+
+    if (nElse) {
+      cElse.chainElse = cIf;
+      nElse.chainElse = cIf;
+
+      ret.push(cElse, nElse);
+    }
+
+    return ret;
+  }
+
   dl = 100;
 
   constructor(props) {
@@ -59,6 +78,21 @@ class Chain extends d.Component {
           continue;
         }
 
+        if (x.chainIf) {
+          x.chainIfResult = await x.chainIf();
+
+          if (!x.chainIfResult) {
+            continue;
+          }
+        }
+
+        if (
+          (x.chainThen && !x.chainThen.chainIfResult) ||
+          (x.chainElse && x.chainElse.chainIfResult)
+        ) {
+          continue;
+        }
+
         if (!x.childNodes || !x.childNodes.length) {
           targetEl.append(x);
           continue;
@@ -87,11 +121,9 @@ class Chain extends d.Component {
   typewrite = async (el, x) => {
     x = String(x);
 
-    while (x.length) {
+    for (let i = 0; i < x.length; i++) {
       await timeout(this.dl);
-
-      el.append(document.createTextNode(x[0]));
-      x = x.slice(1);
+      el.append(document.createTextNode(x[i]));
     }
   };
 
