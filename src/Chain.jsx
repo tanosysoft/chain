@@ -37,6 +37,9 @@ class Chain extends d.Component {
     return ret;
   }
 
+  stack = [];
+  queue = [];
+  targetEl = null;
   dl = 100;
 
   constructor(props) {
@@ -48,38 +51,129 @@ class Chain extends d.Component {
     return d.resolve(this.props.class) || null;
   }
 
-  runScript = async () => {
-    let stack = [];
-    let queue = [...this.props.children];
-    let targetEl = this.el;
+  cloneChildren = (
+    xs = this.props.children,
+    cloneMap = new Map(),
+  ) => xs.map(x => {
+    if (x instanceof Node) {
+      let y = x.cloneNode(false);
 
-    while (stack.length || queue.length) {
-      if (!queue.length) {
-        let prevState = stack.pop();
+      cloneMap.set(x, y);
 
-        queue = prevState.queue;
-        targetEl = prevState.targetEl;
+      if (x.bindings) {
+        y.bindings = x.bindings;
+      }
+
+      for (let k of Object.keys(x).filter(y => y.startsWith('chain'))) {
+        let z = x[k];
+
+        if (z instanceof Node) {
+          let w = cloneMap.get(z);
+
+          if (!w) {
+            throw new Error(`Prop ${k} references a node not in the cloneMap`);
+          }
+
+          y[k] = w;
+
+          continue;
+        }
+
+        y[k] = x[k];
+      }
+
+      if (x.childNodes && x.childNodes.length) {
+        y.append(...this.cloneChildren([...x.childNodes], cloneMap));
+      }
+
+      return y;
+    }
+
+    return x;
+  });
+
+  rewind = toLabel => {
+    this.stack = [];
+    this.queue = this.cloneChildren();
+    this.targetEl = this.el;
+
+    let lengthBeforeRewind = this.el.childNodes.length;
+    let lastChildBeforeRewind = this.el.lastChild;
+
+    if (toLabel) {
+      let found = false;
+
+      while (this.stack.length || this.queue.length) {
+        if (!this.queue.length) {
+          let prevState = this.stack.pop();
+
+          this.queue = prevState.queue;
+          this.targetEl = prevState.targetEl;
+
+          continue;
+        }
+
+        let x = this.queue.shift();
+
+        if (x.chainLabel === toLabel) {
+          found = true;
+          break;
+        }
+
+        if (x.childNodes && x.childNodes.length) {
+          this.stack.push({
+            targetEl: this.targetEl,
+            queue: this.queue,
+          });
+
+          this.queue = [...x.childNodes];
+          x.innerHTML = '';
+
+          this.targetEl.append(x);
+          this.targetEl = x;
+        }
+      }
+
+      if (!found) {
+        throw new Error(`Label not found: ${toLabel}`);
+      }
+
+      while (this.el.childNodes.length > lengthBeforeRewind + 1) {
+        lastChildBeforeRewind.nextSibling.remove();
+      }
+    }
+  };
+
+  run = async fromLabel => {
+    this.rewind(fromLabel);
+
+    while (this.stack.length || this.queue.length) {
+      if (!this.queue.length) {
+        let prevState = this.stack.pop();
+
+        this.queue = prevState.queue;
+        this.targetEl = prevState.targetEl;
 
         continue;
       }
 
-      let x = queue.shift();
+      let x = this.queue.shift();
 
       if (x instanceof Text) {
-        await this.typewrite(targetEl, x.textContent);
+        await this.typewrite(this.targetEl, x.textContent);
         continue;
       }
 
       if (x instanceof Node) {
         if (x.chainFn) {
-          targetEl.append(x);
-          await x.chainFn(targetEl, this);
+          this.targetEl.append(x);
+          await x.chainFn(this.targetEl, this);
 
           continue;
         }
 
         if (x.chainIf) {
-          x.chainIfResult = await x.chainIf();
+          x.chainIfResult = Boolean(await x.chainIf());
 
           if (!x.chainIfResult) {
             continue;
@@ -87,24 +181,27 @@ class Chain extends d.Component {
         }
 
         if (
-          (x.chainThen && !x.chainThen.chainIfResult) ||
-          (x.chainElse && x.chainElse.chainIfResult)
+          (x.chainThen && (x.chainThen.chainIfResult === undefined || !x.chainThen.chainIfResult)) ||
+          (x.chainElse && (x.chainElse.chainIfResult === undefined || x.chainElse.chainIfResult))
         ) {
           continue;
         }
 
         if (!x.childNodes || !x.childNodes.length) {
-          targetEl.append(x);
+          this.targetEl.append(x);
           continue;
         }
 
-        stack.push({ targetEl, queue });
+        this.stack.push({
+          targetEl: this.targetEl,
+          queue: this.queue,
+        });
 
-        queue = [...x.childNodes];
+        this.queue = [...x.childNodes];
         x.innerHTML = '';
 
-        targetEl.append(x);
-        targetEl = x;
+        this.targetEl.append(x);
+        this.targetEl = x;
 
         continue;
       }
@@ -114,7 +211,7 @@ class Chain extends d.Component {
         continue;
       }
 
-      await this.typewrite(targetEl, x);
+      await this.typewrite(this.targetEl, x);
     }
   };
 
@@ -129,11 +226,20 @@ class Chain extends d.Component {
 
   render = () => this.el = (
     <div
-      onAttach={this.runScript}
+      onAttach={() => this.run()}
       class={['Chain', () => this.classes]}
     />
   );
 }
+
+let goTo = label => (_, chain) => chain.rewind(label);
+
+let label = id => {
+  let n = d.comment(`chain: label ${id}`);
+  n.chainLabel = id;
+
+  return n;
+};
 
 let sdl = dl => (_, chain) => chain.dl = dl;
 let sec = s => () => timeout(s * 1000);
@@ -153,4 +259,4 @@ let w = el => new Promise(resolve => {
 });
 
 export default Chain;
-export { sdl, sec, w };
+export { goTo, label, sdl, sec, w };
