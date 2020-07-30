@@ -37,6 +37,13 @@ class Chain extends d.Component {
     return ret;
   }
 
+  static shield({ children, ...props }) {
+    let el = <div {...props}>{children}</div>;
+    el.chainShield = true;
+
+    return el;
+  }
+
   stack = [];
   queue = [];
   targetEl = null;
@@ -167,7 +174,11 @@ class Chain extends d.Component {
       if (x instanceof Node) {
         if (x.chainFn) {
           this.targetEl.append(x);
-          await x.chainFn(this.targetEl, this);
+          let y = await x.chainFn(this, this.targetEl);
+
+          if (typeof y === 'function') {
+            await y(this, this.targetEl);
+          }
 
           continue;
         }
@@ -184,6 +195,10 @@ class Chain extends d.Component {
           (x.chainThen && (x.chainThen.chainIfResult === undefined || !x.chainThen.chainIfResult)) ||
           (x.chainElse && (x.chainElse.chainIfResult === undefined || x.chainElse.chainIfResult))
         ) {
+          continue;
+        }
+
+        if (x.chainShield) {
           continue;
         }
 
@@ -207,7 +222,12 @@ class Chain extends d.Component {
       }
 
       if (typeof x === 'function') {
-        await x();
+        let y = await x(this, this.targetEl);
+
+        if (typeof y === 'function') {
+          await y(this, this.targetEl);
+        }
+
         continue;
       }
 
@@ -232,7 +252,7 @@ class Chain extends d.Component {
   );
 }
 
-let goTo = label => (_, chain) => chain.rewind(label);
+let goTo = label => chain => chain.rewind(label);
 
 let label = id => {
   let n = d.comment(`chain: label ${id}`);
@@ -241,10 +261,10 @@ let label = id => {
   return n;
 };
 
-let sdl = dl => (_, chain) => chain.dl = dl;
+let sdl = dl => chain => chain.dl = dl;
 let sec = s => () => timeout(s * 1000);
 
-let w = el => new Promise(resolve => {
+let w = (chain, el) => new Promise(resolve => {
   let cursor = <span class="Chain-waitCursor" />;
   el.append(cursor);
 
