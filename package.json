@@ -7,7 +7,9 @@
     "lint": "prettier --check \"src/**/*.{js,jsx}\""
   },
   "dependencies": {
-    "@dominant/core": "^0.0.2"
+    "@dominant/core": "^0.0.2",
+    "axios": "^0.19.2",
+    "nanoid": "^3.1.12"
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
