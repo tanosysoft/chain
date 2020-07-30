@@ -4,12 +4,13 @@ import axios from 'axios';
 import d from '@dominant/core';
 import { nanoid } from 'nanoid';
 
-let playerId = localStorage.getItem('playerId');
+let playerId = localStorage.getItem('playerId') || nanoid();
 
-if (!playerId) {
-  playerId = nanoid();
-  localStorage.setItem('playerId', playerId);
+if (location.hash && !playerId.endsWith(location.hash)) {
+  playerId = `${playerId.split('#')[0]}${location.hash}`;
 }
+
+localStorage.setItem('playerId', playerId);
 
 let hub = axios.create({ baseURL: 'https://protohub.guiprav.cc/chain3' });
 
