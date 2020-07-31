@@ -126,7 +126,7 @@ class Chain extends d.Component {
         let x = this.queue.shift();
 
         if (x.chainLabel === toLabel) {
-          found = true;
+          found = x;
           break;
         }
 
@@ -148,8 +148,8 @@ class Chain extends d.Component {
         throw new Error(`Label not found: ${toLabel}`);
       }
 
-      while (this.el.childNodes.length > lengthBeforeRewind + 1) {
-        lastChildBeforeRewind.nextSibling.remove();
+      while (this.el.childNodes[0] && !this.el.childNodes[0].contains?.(found)) {
+        this.el.childNodes[0].remove();
       }
     }
   };
