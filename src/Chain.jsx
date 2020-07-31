@@ -48,10 +48,13 @@ class Chain extends d.Component {
   queue = [];
   targetEl = null;
   dl = 100;
+  lastCheckpoint = null;
 
   constructor(props) {
     super();
+
     this.props = props;
+    this.lastCheckpoint = localStorage.getItem('chain3.lastCheckpoint');
   }
 
   get classes() {
@@ -246,11 +249,13 @@ class Chain extends d.Component {
 
   render = () => this.el = (
     <div
-      onAttach={() => this.run()}
+      onAttach={() => this.run(this.lastCheckpoint)}
       class={['Chain', () => this.classes]}
     />
   );
 }
+
+let clear = chain => chain.el.innerHTML = '';
 
 let goTo = label => chain => chain.rewind(label);
 
@@ -260,6 +265,15 @@ let label = id => {
 
   return n;
 };
+
+let checkpoint = id => [
+  label(id),
+
+  chain => {
+    chain.lastCheckpoint = id;
+    localStorage.setItem('chain3.lastCheckpoint', id);
+  },
+];
 
 let sdl = dl => chain => chain.dl = dl;
 let sec = s => () => timeout(s * 1000);
@@ -279,4 +293,4 @@ let w = (chain, el) => new Promise(resolve => {
 });
 
 export default Chain;
-export { goTo, label, sdl, sec, w };
+export { clear, goTo, label, checkpoint, sdl, sec, w };
