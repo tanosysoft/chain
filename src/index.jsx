@@ -30,6 +30,7 @@ let Fyria = () => (
     {checkpoint('start')}
     {track('start')}
     {clear}
+    {sdl(100)}
     <h1 class="mb-8">City of Fyrya{sec(1)}</h1>
 
     {track('welcome')}
