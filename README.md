@@ -1,29 +1,15 @@
-# New Project
+# CHAIN
 
-> ✨ Bootstrapped with Create Snowpack App (CSA).
+No time to explain. Code is worth a thousand words.
 
-## Available Scripts
+## License
 
-### npm start
+![](https://www.gnu.org/graphics/agplv3-155x51.png)
 
-Runs the app in the development mode.
-Open http://localhost:8080 to view it in the browser.
+CHAIN is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-The page will reload if you make edits.
-You will also see any lint errors in the console.
+## Exclusion of warranty
 
-### npm test
+CHAIN is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 
-Launches the test runner in the interactive watch mode.
-See the section about running tests for more information.
-
-### npm run build
-
-Builds a static copy of your site to the `build/` folder.
-Your app is ready to be deployed!
-
-**For the best production performance:** Add a build bundler plugin like "@snowpack/plugin-webpack" or "@snowpack/plugin-parcel" to your `snowpack.config.json` config file.
-
-### Q: What about Eject?
-
-No eject needed! Snowpack guarantees zero lock-in, and CSA strives for the same.
+A copy of AGPLv3 can be found in [COPYING.](COPYING)

@@ -1,4 +1,12 @@
 {
+  "name": "@tanosysoft/chain",
+  "version": "0.0.0",
+  "author": "Gui Prá",
+  "license": "AGPL-3.0+",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tanosysoft/chain"
+  },
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
@@ -19,5 +27,8 @@
     "babel-preset-modern-browsers": "^14.2.1",
     "prettier": "^2.0.5",
     "snowpack": "^2.6.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
