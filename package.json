@@ -1,12 +1,13 @@
 {
   "name": "@tanosysoft/chain",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Gui Prá",
   "license": "AGPL-3.0+",
   "repository": {
     "type": "git",
     "url": "https://github.com/tanosysoft/chain"
   },
+  "main": "src/Chain.jsx",
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
