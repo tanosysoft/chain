@@ -38,7 +38,7 @@ class Chain extends d.Component {
   }
 
   static shield({ children, ...props }) {
-    let el = <div {...props}>{children}</div>;
+    let el = d.el('div', props, ...children);
     el.chainShield = true;
 
     return el;
@@ -247,12 +247,10 @@ class Chain extends d.Component {
     }
   };
 
-  render = () => this.el = (
-    <div
-      onAttach={() => this.run(this.lastCheckpoint)}
-      class={['Chain', () => this.classes]}
-    />
-  );
+  render = () => this.el = d.el('div', {
+      onAttach: () => this.run(this.lastCheckpoint),
+      class: ['Chain', () => this.classes],
+  });
 }
 
 let clear = chain => chain.el.innerHTML = '';
@@ -279,7 +277,7 @@ let sdl = dl => chain => chain.dl = dl;
 let sec = s => () => timeout(s * 1000);
 
 let w = (chain, el) => new Promise(resolve => {
-  let cursor = <span class="Chain-waitCursor" />;
+  let cursor = d.el('span', { class: 'Chain-waitCursor' });
   el.append(cursor);
 
   let onClick = () => {

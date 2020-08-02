@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/tanosysoft/chain"
   },
-  "main": "src/Chain.jsx",
+  "main": "src/Chain.js",
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
