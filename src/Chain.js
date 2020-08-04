@@ -6,7 +6,7 @@ class Chain extends d.Component {
   static evPropsMap = new WeakMap();
 
   static el(type, props, ...children) {
-    children = children.map(x => {
+    children = children.flat(10).map(x => {
       if (typeof x === 'function') {
         let n = d.comment(`chain: ${x.name || 'anonymous'}`);
         n.chainFn = x;
@@ -153,11 +153,9 @@ class Chain extends d.Component {
     this.queue = this.cloneChildren();
     this.targetEl = this.el;
 
-    let lengthBeforeRewind = this.el.childNodes.length;
-    let lastChildBeforeRewind = this.el.lastChild;
-
     if (toLabel) {
       let found = false;
+      let rootElsToRemove = [];
 
       while (this.stack.length || this.queue.length) {
         if (!this.queue.length) {
@@ -172,7 +170,12 @@ class Chain extends d.Component {
         let x = this.queue.shift();
 
         if (x.chainLabel === toLabel) {
+          if (this.stack.length > 0) {
+            rootElsToRemove.pop();
+          }
+
           found = x;
+
           break;
         }
 
@@ -185,6 +188,10 @@ class Chain extends d.Component {
           this.queue = [...x.childNodes];
           x.innerHTML = '';
 
+          if (this.stack.length === 1) {
+            rootElsToRemove.push(x);
+          }
+
           this.targetEl.append(x);
           this.targetEl = x;
         }
@@ -194,8 +201,8 @@ class Chain extends d.Component {
         throw new Error(`Label not found: ${toLabel}`);
       }
 
-      while (this.el.childNodes[0] && !this.el.childNodes[0].contains?.(found)) {
-        this.el.childNodes[0].remove();
+      for (let x of rootElsToRemove) {
+        x.remove();
       }
     }
   };
@@ -304,7 +311,23 @@ class Chain extends d.Component {
   });
 }
 
-let clear = chain => chain.el.innerHTML = '';
+let clear = chain => {
+  for (let n of chain.el.childNodes) {
+    if (!n.contains(chain.targetEl)) {
+      n.remove();
+    }
+  }
+
+  let cursor = chain.targetEl;
+
+  while (cursor && cursor !== chain.el.parentElement) {
+    while (cursor.childNodes.length > 1) {
+      cursor.childNodes[0].remove();
+    }
+
+    cursor = cursor.parentElement;
+  }
+};
 
 let goTo = label => chain => chain.rewind(label);
 
