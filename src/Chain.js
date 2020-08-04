@@ -3,6 +3,8 @@ import d from '@dominant/core';
 let timeout = dl => new Promise(r => setTimeout(r, dl));
 
 class Chain extends d.Component {
+  static evPropsMap = new WeakMap();
+
   static el(type, props, ...children) {
     children = children.map(x => {
       if (typeof x === 'function') {
@@ -15,7 +17,23 @@ class Chain extends d.Component {
       return x;
     });
 
-    return d.el(type, props, ...children);
+    let el = d.el(type, props, ...children);
+
+    let evProps = {};
+
+    for (let k of Object.keys(props || {}).filter(k => k.startsWith('on'))) {
+      if (['onattach', 'ondetach'].includes(k.toLowerCase())) {
+        continue;
+      }
+
+      evProps[k] = props[k];
+    }
+
+    if (Object.keys(evProps).length) {
+      Chain.evPropsMap.set(el, evProps);
+    }
+
+    return el;
   }
 
   static if(predFn, nThen, nElse) {
@@ -112,6 +130,12 @@ class Chain extends d.Component {
         }
 
         y[k] = x[k];
+      }
+
+      let evListeners = Chain.evPropsMap.get(x);
+
+      for (let [k, v] of Object.entries(evListeners || {})) {
+        y.addEventListener(k.slice(2).toLowerCase(), v);
       }
 
       if (x.childNodes && x.childNodes.length) {
