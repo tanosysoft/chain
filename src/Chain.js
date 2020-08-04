@@ -48,18 +48,40 @@ class Chain extends d.Component {
   queue = [];
   targetEl = null;
   dl = 100;
-  lastCheckpoint = null;
+  progress = {};
 
   constructor(props) {
     super();
-
     this.props = props;
-    this.lastCheckpoint = localStorage.getItem('chain3.lastCheckpoint');
   }
 
   get classes() {
     return d.resolve(this.props.class) || null;
   }
+
+  get autoSave() {
+    return Boolean(d.resolve(this.props.autoSave));
+  }
+
+  get autoLoad() {
+    return Boolean(d.resolve(this.props.autoLoad));
+  }
+
+  saveGame = () => {
+    localStorage.setItem('chain.savedProgress', JSON.stringify(this.progress));
+  };
+
+  loadGame = () => {
+    try {
+      this.progress =
+        JSON.parse(localStorage.getItem('chain.savedProgress') || '{}');
+
+      this.rewind(this.progress.lastCheckpoint);
+    } catch (err) {
+      console.error(err);
+      console.warn('Could not parse chain.savedProgress from local storage.');
+    }
+  };
 
   cloneChildren = (
     xs = this.props.children,
@@ -154,8 +176,12 @@ class Chain extends d.Component {
     }
   };
 
-  run = async fromLabel => {
-    this.rewind(fromLabel);
+  run = async () => {
+    if (!this.autoLoad || !localStorage.getItem('chain.savedProgress')) {
+      this.rewind();
+    } else {
+      this.loadGame();
+    }
 
     while (this.stack.length || this.queue.length) {
       if (!this.queue.length) {
@@ -248,8 +274,9 @@ class Chain extends d.Component {
   };
 
   render = () => this.el = d.el('div', {
-      onAttach: () => this.run(this.lastCheckpoint),
+      onAttach: () => this.run(),
       class: ['Chain', () => this.classes],
+      model: this,
   });
 }
 
@@ -268,8 +295,11 @@ let checkpoint = id => [
   label(id),
 
   chain => {
-    chain.lastCheckpoint = id;
-    localStorage.setItem('chain3.lastCheckpoint', id);
+    chain.progress.lastCheckpoint = id;
+
+    if (chain.autoSave) {
+      chain.saveGame();
+    }
   },
 ];
 
@@ -291,4 +321,4 @@ let w = (chain, el) => new Promise(resolve => {
 });
 
 export default Chain;
-export { clear, goTo, label, checkpoint, sdl, sec, w };
+export { clear, d, goTo, label, checkpoint, sdl, sec, w };

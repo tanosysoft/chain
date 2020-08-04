@@ -26,7 +26,7 @@ addEventListener('click', ev => {
 });
 
 let Fyria = () => (
-  <Chain class="mx-auto px-4 py-10">
+  <Chain class="mx-auto px-4 py-10" autoSave autoLoad>
     {checkpoint('start')}
     {track('start')}
     {clear}
