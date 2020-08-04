@@ -176,9 +176,9 @@ class Chain extends d.Component {
     }
   };
 
-  run = async () => {
-    if (!this.autoLoad || !localStorage.getItem('chain.savedProgress')) {
-      this.rewind();
+  run = async fromLabel => {
+    if (fromLabel || !this.autoLoad || !localStorage.getItem('chain.savedProgress')) {
+      this.rewind(fromLabel);
     } else {
       this.loadGame();
     }
