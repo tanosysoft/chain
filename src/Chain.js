@@ -312,7 +312,7 @@ class Chain extends d.Component {
 }
 
 let clear = chain => {
-  for (let n of chain.el.childNodes) {
+  for (let n of [...chain.el.childNodes]) {
     if (!n.contains(chain.targetEl)) {
       n.remove();
     }
