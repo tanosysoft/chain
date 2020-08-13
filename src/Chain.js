@@ -237,7 +237,16 @@ class Chain extends d.Component {
           let y = await x.chainFn(this, this.targetEl);
 
           if (typeof y === 'function') {
-            await y(this, this.targetEl);
+            y = await y(this, this.targetEl);
+          }
+
+          if (typeof y === 'string' || Array.isArray(y) || y instanceof Node) {
+            this.stack.push({
+              targetEl: this.targetEl,
+              queue: this.queue,
+            });
+
+            this.queue = [y].flat(10);
           }
 
           continue;
