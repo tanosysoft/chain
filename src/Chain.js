@@ -2,6 +2,12 @@ import d from '@dominant/core';
 
 let timeout = dl => new Promise(r => setTimeout(r, dl));
 
+let getMaxScrollY = () =>
+  document.body.scrollHeight - document.documentElement.clientHeight;
+
+let canScrollDown = () => scrollY < getMaxScrollY();
+let scrollToBottom = () => scroll(0, getMaxScrollY());
+
 class Chain extends d.Component {
   static evPropsMap = new WeakMap();
 
@@ -220,6 +226,8 @@ class Chain extends d.Component {
         continue;
       }
 
+      let isManuallyScrolling = canScrollDown();
+
       let x = this.queue.shift();
 
       if (x instanceof Text) {
@@ -245,6 +253,7 @@ class Chain extends d.Component {
             this.queue = [y].flat(10);
           }
 
+          !isManuallyScrolling && scrollToBottom();
           continue;
         }
 
@@ -273,6 +282,8 @@ class Chain extends d.Component {
           x.classList?.contains('Chain-atom')
         ) {
           this.targetEl.append(x);
+          !isManuallyScrolling && scrollToBottom();
+
           continue;
         }
 
@@ -287,6 +298,7 @@ class Chain extends d.Component {
         this.targetEl.append(x);
         this.targetEl = x;
 
+        !isManuallyScrolling && scrollToBottom();
         continue;
       }
 
@@ -309,7 +321,11 @@ class Chain extends d.Component {
 
     for (let i = 0; i < x.length; i++) {
       await timeout(this.dl);
+
+      let isManuallyScrolling = canScrollDown();
+
       el.append(document.createTextNode(x[i]));
+      !isManuallyScrolling && scrollToBottom();
     }
   };
 
@@ -368,7 +384,9 @@ let w = (chain, el) => new Promise(resolve => {
 
   let onClick = () => {
     document.removeEventListener('click', onClick);
+
     cursor.remove();
+    scrollToBottom();
 
     resolve();
   };
