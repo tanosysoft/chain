@@ -36,6 +36,13 @@ class Chain extends d.Component {
     return el;
   }
 
+  static atom({ children, ...props }) {
+    let el = d.el('div', props, ...children);
+    el.classList.add('Chain-atom');
+
+    return el;
+  }
+
   static if(predFn, nThen, nElse) {
     let cIf = d.comment('chain: if');
     let cElse = d.comment('chain: else');
@@ -159,6 +166,8 @@ class Chain extends d.Component {
 
       while (this.stack.length || this.queue.length) {
         if (!this.queue.length) {
+          this.targetEl.remove();
+
           let prevState = this.stack.pop();
 
           this.queue = prevState.queue;
@@ -170,12 +179,7 @@ class Chain extends d.Component {
         let x = this.queue.shift();
 
         if (x.chainLabel === toLabel) {
-          if (this.stack.length > 0) {
-            rootElsToRemove.pop();
-          }
-
           found = x;
-
           break;
         }
 
@@ -188,10 +192,6 @@ class Chain extends d.Component {
           this.queue = [...x.childNodes];
           x.innerHTML = '';
 
-          if (this.stack.length === 1) {
-            rootElsToRemove.push(x);
-          }
-
           this.targetEl.append(x);
           this.targetEl = x;
         }
@@ -199,10 +199,6 @@ class Chain extends d.Component {
 
       if (!found) {
         throw new Error(`Label not found: ${toLabel}`);
-      }
-
-      for (let x of rootElsToRemove) {
-        x.remove();
       }
     }
   };
@@ -271,7 +267,11 @@ class Chain extends d.Component {
           continue;
         }
 
-        if (!x.childNodes || !x.childNodes.length) {
+        if (
+          !x.childNodes ||
+          !x.childNodes.length ||
+          x.classList?.contains('Chain-atom')
+        ) {
           this.targetEl.append(x);
           continue;
         }
