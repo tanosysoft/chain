@@ -20,6 +20,10 @@ class Chain extends d.Component {
         return n;
       }
 
+      if (['boolean', 'undefined'].includes(typeof x) || x === null) {
+        return '';
+      }
+
       return x;
     });
 
@@ -312,7 +316,9 @@ class Chain extends d.Component {
         continue;
       }
 
-      await this.typewrite(this.targetEl, x);
+      if (['string', 'number'].includes(typeof x)) {
+        await this.typewrite(this.targetEl, x);
+      }
     }
   };
 
