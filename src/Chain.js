@@ -401,6 +401,10 @@ class Chain extends d.Component {
   });
 }
 
+let cancelFastForward = chain => {
+  chain.fastForward = false;
+};
+
 let clear = chain => {
   for (let n of [...chain.el.childNodes]) {
     if (!n.contains(chain.targetEl)) {
@@ -471,4 +475,4 @@ let w = (chain, el) => new Promise(resolve => {
 });
 
 export default Chain;
-export { clear, d, goTo, label, checkpoint, sdl, sec, w };
+export { cancelFastForward, clear, d, goTo, label, checkpoint, sdl, sec, w };
