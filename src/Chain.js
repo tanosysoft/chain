@@ -1,11 +1,29 @@
 import d from '@dominant/core';
 
-let timeout = dl => new Promise(r => setTimeout(r, dl));
+let timeout = (chain, dl) => new Promise(r => {
+  let done = false;
+  let id = setTimeout(r, dl);
+
+  (function monitorFastForwardFlag() {
+    if (done) {
+      return;
+    }
+
+    if (chain.fastForward) {
+      clearInterval(id);
+      r();
+
+      return;
+    }
+
+    requestAnimationFrame(monitorFastForwardFlag);
+  })();
+});
 
 let getMaxScrollY = () =>
   document.body.scrollHeight - document.documentElement.clientHeight;
 
-let canScrollDown = () => scrollY < getMaxScrollY();
+let canScrollDown = () => scrollY < getMaxScrollY() - 30;
 let scrollToBottom = () => scroll(0, getMaxScrollY());
 
 class Chain extends d.Component {
@@ -220,7 +238,26 @@ class Chain extends d.Component {
     }
   };
 
+  init = () => {
+    addEventListener('click', ({ target }) => {
+      if (
+        this.canFastForward &&
+        !['A', 'BUTTON'].includes(target.tagName) &&
+        !target.closest('a, button')
+      ) {
+        this.fastForward = true;
+        console.log({ fastForward: this.fastForward });
+      }
+    });
+
+    this.isInitialized = true;
+  };
+
   run = async fromLabel => {
+    if (!this.isInitialized) {
+      this.init();
+    }
+
     if (fromLabel || !this.autoLoad || !localStorage.getItem('chain.savedProgress')) {
       this.rewind(fromLabel);
     } else {
@@ -331,18 +368,29 @@ class Chain extends d.Component {
         await this.typewrite(this.targetEl, x);
       }
     }
+
+    this.fastForward = false;
+    console.log({ fastForward: this.fastForward });
   };
 
   typewrite = async (el, x) => {
-    x = String(x);
+    try {
+      this.canFastForward = true;
+      console.log({ canFastForward: this.canFastForward });
 
-    for (let i = 0; i < x.length; i++) {
-      await timeout(this.dl);
+      x = String(x);
 
-      let isManuallyScrolling = canScrollDown();
+      for (let i = 0; i < x.length; i++) {
+        await timeout(this, this.dl);
 
-      el.append(document.createTextNode(x[i]));
-      !isManuallyScrolling && scrollToBottom();
+        let isManuallyScrolling = canScrollDown();
+
+        el.append(document.createTextNode(x[i]));
+        !isManuallyScrolling && scrollToBottom();
+      }
+    } finally {
+      this.canFastForward = false;
+      console.log({ canFastForward: this.canFastForward });
     }
   };
 
@@ -393,22 +441,33 @@ let checkpoint = id => [
 ];
 
 let sdl = dl => chain => chain.dl = dl;
-let sec = s => () => timeout(s * 1000);
+
+let sec = s => async chain => {
+  chain.canFastForward = true;
+  console.log({ canFastForward: chain.canFastForward });
+
+  await timeout(chain, s * 1000);
+  chain.canFastForward = false;
+  console.log({ canFastForward: chain.canFastForward });
+};
 
 let w = (chain, el) => new Promise(resolve => {
   let cursor = d.el('span', { class: 'Chain-waitCursor' });
   el.append(cursor);
 
   let onClick = () => {
-    document.removeEventListener('click', onClick);
+    removeEventListener('click', onClick);
 
     cursor.remove();
     scrollToBottom();
 
+    chain.fastForward = false;
+    console.log({ fastForward: chain.fastForward });
+
     resolve();
   };
 
-  document.addEventListener('click', onClick);
+  addEventListener('click', onClick);
 });
 
 export default Chain;
