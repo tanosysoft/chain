@@ -246,7 +246,6 @@ class Chain extends d.Component {
         !target.closest('a, button')
       ) {
         this.fastForward = true;
-        console.log({ fastForward: this.fastForward });
       }
     });
 
@@ -370,13 +369,11 @@ class Chain extends d.Component {
     }
 
     this.fastForward = false;
-    console.log({ fastForward: this.fastForward });
   };
 
   typewrite = async (el, x) => {
     try {
       this.canFastForward = true;
-      console.log({ canFastForward: this.canFastForward });
 
       x = String(x);
 
@@ -390,7 +387,6 @@ class Chain extends d.Component {
       }
     } finally {
       this.canFastForward = false;
-      console.log({ canFastForward: this.canFastForward });
     }
   };
 
@@ -448,11 +444,9 @@ let sdl = dl => chain => chain.dl = dl;
 
 let sec = s => async chain => {
   chain.canFastForward = true;
-  console.log({ canFastForward: chain.canFastForward });
 
   await timeout(chain, s * 1000);
   chain.canFastForward = false;
-  console.log({ canFastForward: chain.canFastForward });
 };
 
 let w = (chain, el) => new Promise(resolve => {
@@ -466,7 +460,6 @@ let w = (chain, el) => new Promise(resolve => {
     scrollToBottom();
 
     chain.fastForward = false;
-    console.log({ fastForward: chain.fastForward });
 
     resolve();
   };
