@@ -79,6 +79,13 @@ class Chain extends d.Component {
     return el;
   }
 
+  static halt() {
+    let n = d.comment('chain: halt');
+    n.chainHalt = true;
+
+    return n;
+  }
+
   stack = [];
   queue = [];
   targetEl = null;
@@ -240,6 +247,10 @@ class Chain extends d.Component {
       }
 
       if (x instanceof Node) {
+        if (x.chainHalt) {
+          break;
+        }
+
         if (x.chainFn) {
           this.targetEl.append(x);
           let y = await x.chainFn(this, this.targetEl);
