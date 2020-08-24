@@ -64,6 +64,10 @@ class Chain extends d.Component {
     return el;
   }
 
+  static frag({ children }) {
+    return children;
+  }
+
   static atom({ children, ...props }) {
     let el = d.el('div', props, ...children);
     el.classList.add('Chain-atom');
