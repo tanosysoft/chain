@@ -1,6 +1,6 @@
 {
   "name": "@tanosysoft/chain",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "author": "Gui Prá",
   "license": "AGPL-3.0+",
   "repository": {
@@ -16,7 +16,7 @@
     "lint": "prettier --check \"src/**/*.{js,jsx}\""
   },
   "dependencies": {
-    "@dominant/core": "^0.0.2",
+    "@dominant/core": "^0.0.3",
     "axios": "^0.19.2",
     "nanoid": "^3.1.12"
   },
