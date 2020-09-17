@@ -156,8 +156,10 @@ class Chain extends d.Component {
 
       cloneMap.set(x, y);
 
-      if (x.bindings) {
-        y.bindings = x.bindings;
+      for (let k of ['bindings', 'context']) {
+        if (x[k]) {
+          y[k] = x[k];
+        }
       }
 
       for (let k of Object.keys(x).filter(y => y.startsWith('chain'))) {
