@@ -196,6 +196,24 @@ class Chain extends d.Component {
     return x;
   });
 
+  labelExists = label => {
+    for (let n of this.props.children) {
+      if (!(n instanceof Node)) {
+        continue;
+      }
+
+      let walker = document.createTreeWalker(n, NodeFilter.SHOW_COMMENT);
+
+      for (let n2 = walker.currentNode; n2; n2 = walker.nextNode()) {
+        if (n2.chainLabel === label) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   rewind = toLabel => {
     this.stack = [];
     this.queue = this.cloneChildren();
